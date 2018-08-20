@@ -1,3 +1,5 @@
+import os
+
 #################################################
 ################# MS API CONSTS #################
 #################################################
@@ -5,29 +7,15 @@
 subscription_key = 'd83931a50c3c444da8deae372468f55f'
 uri_base = 'https://northeurope.api.cognitive.microsoft.com/face/v1.0'
 
-################### DETECTION ################### 
+groupID = '1535'
 
-detect_headers = {
-    'Content-Type': 'application/octet-stream',
-    'Ocp-Apim-Subscription-Key': subscription_key,
-}
+#################################################
 
-detect_params = {
-    'returnFaceId': 'true',
-    'returnFaceAttributes': 'smile',
-}
+pics_needed = 6
 
-################ GROUPS CREATION ################
+#################################################
 
-group_headers = {
-    'Content-Type': 'application/octet-stream',
-    'Ocp-Apim-Subscription-Key': subscription_key,
-}
-
-group_params = {
-    'personGroupId' : '1534'
-}
-
-group_body = {
-    'name': '',
-}
+def ensure_dir(file_path):
+    directory = os.path.dirname(file_path)
+    if not os.path.exists(directory):
+        os.makedirs(directory)
