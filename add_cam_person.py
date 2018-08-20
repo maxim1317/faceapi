@@ -98,7 +98,7 @@ def add_camera_person(FIO, nameID, groupID):
 
 
 def main():
-    add_cf()
+    # add_cf()
 
     CF.Key.set(subscription_key)
     CF.BaseUrl.set(uri_base)
@@ -121,7 +121,7 @@ def main():
 
     add_camera_person(FIO, str(nameID), groupID)
 
-    os.remove('cognitive_face')
+    # os.remove('cognitive_face')
 
 
 if __name__ == '__main__':
