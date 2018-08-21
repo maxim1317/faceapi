@@ -20,7 +20,7 @@ def check_if_trained(groupID):
 
 def detect(groupID):
 
-    cap = cv2.VideoCapture(0)
+    cap = cv2.VideoCapture('http://localhost:8080/u3.mpg')
 
     pic_dir = 'pics/nameID_' + '0' + '/'
     ensure_dir(pic_dir)
@@ -31,7 +31,7 @@ def detect(groupID):
 
         try:
 
-            ret, frame = cap.read()
+            _, frame = cap.read()
 
             face = pic_dir+'pic_'+ '0' +'.jpg'
             
