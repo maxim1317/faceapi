@@ -25,28 +25,33 @@ def detect(groupID):
     pic_dir = 'pics/nameID_' + '0' + '/'
     ensure_dir(pic_dir)
 
-    try:
+    recognised = False
 
-        ret, frame = cap.read()
+    while recognised == False :
 
-        face = pic_dir+'pic_'+ '0' +'.jpg'
-        
-        cv2.imwrite(face, frame)
+        try:
 
-        detected = CF.face.detect(face)
-        print(detected[0]['faceId'])
-        candidate = CF.face.identify([detected[0]['faceId']], groupID)
-        person = CF.person.get(groupID, candidate[0]['candidates'][0]['personId'])
+            ret, frame = cap.read()
 
-        userDataDecoded = json.loads(person['userData'])
+            face = pic_dir+'pic_'+ '0' +'.jpg'
+            
+            cv2.imwrite(face, frame)
 
-        name = userDataDecoded['name']
-        surname = userDataDecoded['surname']
-        middlename = userDataDecoded['middlename']
-        print ('Detected: ' + name + ' ' + middlename + ' ' + surname)
-    except Exception as e:
-        print(e)
-        time.sleep(5)
+            detected = CF.face.detect(face)
+            print(detected[0]['faceId'])
+            candidate = CF.face.identify([detected[0]['faceId']], groupID)
+            person = CF.person.get(groupID, candidate[0]['candidates'][0]['personId'])
+
+            userDataDecoded = json.loads(person['userData'])
+
+            recognised = True
+            name = userDataDecoded['name']
+            surname = userDataDecoded['surname']
+            middlename = userDataDecoded['middlename']
+            print ('Detected: ' + name + ' ' + middlename + ' ' + surname)
+        except Exception as e:
+            print(e)
+            time.sleep(5)
 
     cap.release()
 

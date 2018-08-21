@@ -6,6 +6,7 @@ import cv2
 import os
 import json
 import shutil
+from tqdm import tqdm
 
 from transliterate import translit, get_available_language_codes
 

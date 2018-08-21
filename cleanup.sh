@@ -1,0 +1,1 @@
+rm -r __pycache__ cognitive_face/__pycache__ pics
