@@ -39,7 +39,7 @@ def add_camera_person(FIO, nameID, groupID):
     except Exception as e:
         print(e)
 
-    cap = cv2.VideoCapture(0)
+    cap = cv2.VideoCapture('http://localhost:8080/u3.mpg')
 
     watching = False
     pics = 0
@@ -68,7 +68,7 @@ def add_camera_person(FIO, nameID, groupID):
             pass
 
         if pics == pics_needed:
-            print (colored('READY!', color='green'))
+            print (colored('\nREADY!', color='green'))
             watching = True
 
     pbar.close()
@@ -116,7 +116,7 @@ def main():
 
     # FIO = ask_FIO()
 
-    FIO = {'name' : 'Макс', 'surname' : 'Снес' , 'middlename' : '_'}
+    FIO = {'name' : 'Макс,', 'surname' : 'ты' , 'middlename' : 'эта'}
 
     nameID = translit(FIO['name'] + FIO['surname'], 'ru', reversed=True)
 

@@ -24,6 +24,7 @@ def detect(groupID):
 
     pic_dir = 'pics/nameID_' + '0' + '/'
     ensure_dir(pic_dir)
+    os.remove(pic_dir+'pic_'+ '0' +'.jpg')
 
     recognised = False
 
