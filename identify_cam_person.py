@@ -1,58 +1,110 @@
-import cognitive_face as CF
-
-import time
 import json
+import socket
+import time
+
+import cognitive_face as CF
 import cv2
+from PIL import Image
 
 from apiconsts import *
 
-def check_if_trained(groupID):
 
+def testDevice(source):
+    '''
+        Trying to open webcam/stream
+    '''
+    cap = cv2.VideoCapture(source) 
+    if cap is None or not cap.isOpened():
+        print('Warning: unable to open video source: ', source)
+        cap.release()
+        return False
+    return True
+
+def saveCroped(personId, rect, img):
+    return 'nothing'
+
+def checkIfTrained(groupID):
     while (True):
         pass
         try:
             print(CF.person_group.get_status(groupID))
-            # print (colored('TRAINED!', color='green'))
             return 0
+            
         except Exception as e:
             print(e)
-            time.sleep(5)
+            time.sleep(wait_time)
 
 def detect(groupID):
 
-    cap = cv2.VideoCapture('http://localhost:8080/u3.mpg')
+    source = 'http://localhost:8080/u3.mpg' # Name of the stream or webcam
 
-    pic_dir = 'pics/nameID_' + '0' + '/'
-    ensure_dir(pic_dir)
-    os.remove(pic_dir+'pic_'+ '0' +'.jpg')
+    # source = 0
 
-    recognised = False
+    while testDevice(source) == False: # Check if stream even works
+        pass
 
-    while recognised == False :
+    to_front = socket.socket(socket.AF_INET, socket.SOCK_STREAM) # Sending to front
+    to_front.connect(('localhost', socket_port))
+
+    cap = cv2.VideoCapture(source) # Open stream
+
+    pic_dir = 'pics/frame/' # I save last frame here for cropping and stuff
+    ensure_dir(pic_dir) # check if dir exists
+    # os.remove(pic_dir+'pic_'+ '0' +'.jpg') # lil cleanup
+
+    detected_dir = 'pics/detected/'
+    ensure_dir(detected_dir)
+
+    while True :
+
+        detected_faces = []
+
+        _, frame = cap.read() # Read next frame
+
+        tmp_pic = pic_dir + 'pic_' + '0' +'.jpg'   
+        cv2.imwrite(tmp_pic, frame) # Saving frame for a while
+
+        detected = CF.face.detect(tmp_pic) # Trying to detect faces
+        if len(detected) == 0: # Found something?
+            continue
+
+        for detected_face in detected:
+            detected_faces.append({'faceId' : detected_face['faceId'], 'faceRectangle': detected_face['faceRectangle']}) # Remembering face IDs and rectangles 
+        # print(detected[0]['faceId'])
 
         try:
+            identified_faces = CF.face.identify([d_f['faceId'] for d_f in detected_faces], groupID) # Trying to identify faces
 
-            _, frame = cap.read()
-
-            face = pic_dir+'pic_'+ '0' +'.jpg'
-            
-            cv2.imwrite(face, frame)
-
-            detected = CF.face.detect(face)
-            print(detected[0]['faceId'])
-            candidate = CF.face.identify([detected[0]['faceId']], groupID)
-            person = CF.person.get(groupID, candidate[0]['candidates'][0]['personId'])
-
-            userDataDecoded = json.loads(person['userData'])
-
-            recognised = True
-            name = userDataDecoded['name']
-            surname = userDataDecoded['surname']
-            middlename = userDataDecoded['middlename']
-            print ('Detected: ' + name + ' ' + middlename + ' ' + surname)
         except Exception as e:
             print(e)
-            time.sleep(5)
+            time.sleep(wait_time)
+            continue
+        
+        if len(identified_faces) == 0: # Identified something?
+            continue
+        
+        for identified_face in identified_faces:
+            if identified_face['candidates'][0]['confidence'] >= treshold:
+
+                for face in detected_faces: # Trying to find bounding box
+                    if face['faceId'] == identified_face['faceId']:
+                        rect = face['faceRectangle']
+
+                face_thumb = saveCroped(identified_face['candidates'][0]['personId'], rect, frame) # Saving thumbnail
+            
+                time.sleep(wait_time)
+                person = CF.person.get(groupID, identified_face['candidates'][0]['personId']) # Getting person data
+
+                data = {'userData' : person['userData'], 'thumbnailPath' : face_thumb}
+                # print(data)
+                to_front.send(json.dumps(data)) # Sending to front
+
+        # userDataDecoded = json.loads(person['userData'])
+
+        # name = userDataDecoded['name']
+        # surname = userDataDecoded['surname']
+        # middlename = userDataDecoded['middlename']
+        # print ('Detected: ' + name + ' ' + middlename + ' ' + surname)
 
     cap.release()
 
@@ -61,7 +113,7 @@ def main():
     CF.Key.set(subscription_key)
     CF.BaseUrl.set(uri_base)
 
-    check_if_trained(groupID)
+    checkIfTrained(groupID)
 
     detect(groupID)
 
