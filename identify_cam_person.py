@@ -1,6 +1,6 @@
 import json
-import socket
 import time
+import requests
 
 import cognitive_face as CF
 import cv2
@@ -20,9 +20,6 @@ def testDevice(source):
         return False
     return True
 
-def saveCroped(personId, rect, img):
-    return 'nothing'
-
 def checkIfTrained(groupID):
     while (True):
         pass
@@ -36,15 +33,12 @@ def checkIfTrained(groupID):
 
 def detect(groupID):
 
-    source = 'http://localhost:8080/u3.mpg' # Name of the stream or webcam
+    # source = 'http://localhost:8080/u3.mpg' # Name of the stream or webcam
 
-    # source = 0
+    source = 0
 
     while testDevice(source) == False: # Check if stream even works
         pass
-
-    to_front = socket.socket(socket.AF_INET, socket.SOCK_STREAM) # Sending to front
-    to_front.connect(('localhost', socket_port))
 
     cap = cv2.VideoCapture(source) # Open stream
 
@@ -86,18 +80,18 @@ def detect(groupID):
         for identified_face in identified_faces:
             if identified_face['candidates'][0]['confidence'] >= treshold:
 
+                time.sleep(wait_time)
                 for face in detected_faces: # Trying to find bounding box
                     if face['faceId'] == identified_face['faceId']:
                         rect = face['faceRectangle']
-
-                face_thumb = saveCroped(identified_face['candidates'][0]['personId'], rect, frame) # Saving thumbnail
             
                 time.sleep(wait_time)
                 person = CF.person.get(groupID, identified_face['candidates'][0]['personId']) # Getting person data
 
-                data = {'userData' : person['userData'], 'thumbnailPath' : face_thumb}
                 # print(data)
-                to_front.send(json.dumps(data)) # Sending to front
+                # to_front.send(person['userData']) # Sending to front
+                r = requests.post("http://localhost:9000/rest/userdata", data={'userData' : person['userData'], 'inHelmet' : False})
+                print(r)
 
         # userDataDecoded = json.loads(person['userData'])
 
