@@ -16,7 +16,7 @@ wait_time = 5
 pics_needed = 6
 treshold = 0.6
 
-socket_port = 8086
+# socket_port = 8086
 
 #################################################
 

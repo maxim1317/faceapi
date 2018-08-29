@@ -81,9 +81,9 @@ def detect(groupID):
             if identified_face['candidates'][0]['confidence'] >= treshold:
 
                 time.sleep(wait_time)
-                for face in detected_faces: # Trying to find bounding box
-                    if face['faceId'] == identified_face['faceId']:
-                        rect = face['faceRectangle']
+                # for face in detected_faces: # Trying to find bounding box
+                #     if face['faceId'] == identified_face['faceId']:
+                #         rect = face['faceRectangle']
             
                 time.sleep(wait_time)
                 person = CF.person.get(groupID, identified_face['candidates'][0]['personId']) # Getting person data
