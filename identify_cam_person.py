@@ -58,47 +58,60 @@ def detect(groupID):
         tmp_pic = pic_dir + 'pic_' + '0' +'.jpg'   
         cv2.imwrite(tmp_pic, frame) # Saving frame for a while
 
-        detected = CF.face.detect(tmp_pic) # Trying to detect faces
-        if len(detected) == 0: # Found something?
-            continue
+
+        detected = []
+        while len(detected) == 0:
+            time.sleep(wait_time)
+            detected = CF.face.detect(tmp_pic) # Trying to detect faces
 
         for detected_face in detected:
             detected_faces.append({'faceId' : detected_face['faceId'], 'faceRectangle': detected_face['faceRectangle']}) # Remembering face IDs and rectangles 
-        # print(detected[0]['faceId'])
+            print(detected_face['faceId'])
 
         try:
+            time.sleep(wait_time)
             identified_faces = CF.face.identify([d_f['faceId'] for d_f in detected_faces], groupID) # Trying to identify faces
+            print(identified_faces)
 
         except Exception as e:
             print(e)
-            time.sleep(wait_time)
+            # time.sleep(wait_time)
             continue
         
-        if len(identified_faces) == 0: # Identified something?
-            continue
-        
-        for identified_face in identified_faces:
-            if identified_face['candidates'][0]['confidence'] >= treshold:
-
-                time.sleep(wait_time)
-                # for face in detected_faces: # Trying to find bounding box
-                #     if face['faceId'] == identified_face['faceId']:
-                #         rect = face['faceRectangle']
+        if len(identified_faces) != 0: # Identified something?
             
-                time.sleep(wait_time)
-                person = CF.person.get(groupID, identified_face['candidates'][0]['personId']) # Getting person data
+        
+            for identified_face in identified_faces:
+                if identified_face['candidates'][0]['confidence'] >= threshold:
 
-                # print(data)
-                # to_front.send(person['userData']) # Sending to front
-                r = requests.post("http://localhost:9000/rest/userdata", data={'userData' : person['userData'], 'inHelmet' : False})
-                print(r)
+                    # for face in detected_faces: # Trying to find bounding box
+                    #     if face['faceId'] == identified_face['faceId']:
+                    #         rect = face['faceRectangle']
+                
+                    time.sleep(wait_time)
+                    person = CF.person.get(groupID, identified_face['candidates'][0]['personId']) # Getting person data
 
-        # userDataDecoded = json.loads(person['userData'])
+                    # print(data)
+                    # to_front.send(person['userData']) # Sending to front
+                    headers = {
+                        'Content-Type': 'application/json',
+                    }
+                    payload = {
+                        'userData' : (person['userData']), 
+                        'inHelmet' : False,
+                    }
 
-        # name = userDataDecoded['name']
-        # surname = userDataDecoded['surname']
-        # middlename = userDataDecoded['middlename']
-        # print ('Detected: ' + name + ' ' + middlename + ' ' + surname)
+                    r = requests.post("http://localhost:9000/rest/userdata", headers=headers, data=json.dumps(payload))
+                    print((person['userData']))
+                    print(r.text)
+                    print(r)
+
+            # userDataDecoded = json.loads(person['userData'])
+
+            # name = userDataDecoded['name']
+            # surname = userDataDecoded['surname']
+            # middlename = userDataDecoded['middlename']
+            # print ('Detected: ' + name + ' ' + middlename + ' ' + surname)
 
     cap.release()
 
@@ -108,6 +121,8 @@ def main():
     CF.BaseUrl.set(uri_base)
 
     checkIfTrained(groupID)
+
+    time.sleep(wait_time)
 
     detect(groupID)
 
